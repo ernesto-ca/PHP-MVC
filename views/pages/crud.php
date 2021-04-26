@@ -1,5 +1,9 @@
  <?php
 
+    $interval = 5;
+    $index = 0;
+
+
     if (!isset($_SESSION['logged'])) {
         header("Location:index.php?page=login");
         return;
@@ -10,8 +14,25 @@
         }
     }
 
+    // Check if it is a page (pg) number and a interval (in) number to do the selection query
+    if (isset($_GET['pg']) && isset($_GET['in'])) {
+        $interval = $_GET['in'];
+        $index = $_GET['pg'] == 1 ? 0 : ($interval * $_GET['pg']) - $interval;
+    }
 
-    $users = FormController::ctrSelectUsers();
+    // Set the interval selected to restart the selection query
+    if (isset($_POST['total_number_to_see'])) {
+        $interval =  $_POST['total_number_to_see'];
+    }
+
+
+    // Get total pages number that can be displayed
+    $totalPages = FormController::ctrGetTotalPages($interval);
+
+    // Do the selection query with the index and interval
+    $users = FormController::ctrSelectUsers($index, $interval);
+
+
 
     if (isset($_POST['update'])) {
         $update = FormController::ctrUpdateUser();
@@ -56,6 +77,63 @@
  <!-- Content Start -->
  <div class="container">
      <h2 class="mb-5 text-center">Users In DB</h2>
+     <form class="mb-3" method="POST" action="index.php?page=crud">
+         <div class="input-group">
+             <label class="form-control" for="total_number">Select by interval:</label>
+             <select class="form-control" name="total_number_to_see" id="total_number">
+                 <?php
+                    if ($interval == 5) {
+                        echo "
+                    <option value='2'>2</option>
+                    <option value='5' selected>5</option>
+                    <option value='10'>10</option>
+                    ";
+                    } elseif ($interval == 2) {
+                        echo "
+                    <option value='2' selected>2</option>
+                    <option value='5' >5</option>
+                    <option value='10'>10</option>
+                    ";
+                    } elseif ($interval == 10) {
+                        echo "
+                    <option value='2' >2</option>
+                    <option value='5' >5</option>
+                    <option value='10' selected>10</option>
+                    ";
+                    }
+                    ?>
+
+             </select>
+             <input type="submit" class="btn btn-primary" value="Apply">
+         </div>
+     </form>
+
+     <nav aria-label="Page navigation">
+         <ul class="pagination">
+             <li class="page-item">
+                 <a class="page-link" href="index.php?page=crud&pg=1&in=<?php echo $interval ?>" aria-label="First">
+                     <span aria-hidden="true">&laquo;</span>
+                 </a>
+             </li>
+             <?php
+                for ($i = 1; $i <= $totalPages; $i++) {
+
+                    // Is a page specified that match with the number of the page-item? OR Is index equals to 0 and this is the first page-item?
+                    if ((isset($_GET['pg']) && $_GET['pg'] == $i) || ($index == 0 && $i == 1)) {
+                        echo "<li class='page-item active'> <a class='page-link' href='index.php?page=crud&pg=$i&in=$interval'> $i </a> </li>";
+                    } else {
+                        echo "<li class='page-item'> <a class='page-link' href='index.php?page=crud&pg=$i&in=$interval'> $i </a> </li>";
+                    }
+                }
+                ?>
+             <li class="page-item">
+                 <a class="page-link" href="index.php?page=crud&pg=<?php echo $totalPages ?>&in=<?php echo $interval ?>" aria-label="Last">
+                     <span aria-hidden="true">&raquo;</span>
+                 </a>
+             </li>
+         </ul>
+     </nav>
+
      <table class="table table-bordered table-striped">
          <thead>
              <tr>

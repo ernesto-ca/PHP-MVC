@@ -58,16 +58,44 @@ class FormsModel
         return false;
     }
 
-    /* Select All Function
+    /* Select Total Function
         *
-        * Get all users in the DB
+        * Get the total number of user in the DB
         * @param {String} table -> the current table to select
+        *
+        * return {Int} -> the total number of users
+        */
+    public static function mdlSelectTotal($table)
+    {
+        $statement = Connection::connect()->prepare("SELECT COUNT(ID) AS total FROM $table");
+
+        if ($statement->execute()) {
+            return $statement->fetch(PDO::FETCH_ASSOC)['total'];
+        } else {
+            print_r(Connection::connect()->errorInfo());
+            print_r(Connection::connect()->errorCode());
+        }
+
+        $statement->closeCursor();
+        $statement = null;
+
+        return null;
+    }
+
+
+
+    /* Select Range Function
+        *
+        * Get all users in the specified range in the DB
+        * @param {String} table -> the current table to select
+        * @param {Number} index -> the index position to select
+        * @param {Number} last -> the last position of the inteval to select
         *
         * return {Array} -> the array with all users
         */
-    public static function mdlSelectAll($table)
+    public static function mdlSelectRange($table, $index, $last)
     {
-        $statement = Connection::connect()->prepare("SELECT * FROM $table");
+        $statement = Connection::connect()->prepare("SELECT * FROM $table LIMIT $index,$last");
 
         if ($statement->execute()) {
             return $statement->fetchAll();

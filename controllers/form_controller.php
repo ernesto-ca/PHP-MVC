@@ -37,10 +37,18 @@ class FormController
         }
     }
 
-    public static function ctrSelectUsers()
+    public static function ctrGetTotalPages($totalNumberPerPage)
     {
         $table = "users";
-        $response = FormsModel::mdlSelectAll($table);
+        $response = FormsModel::mdlSelectTotal($table);
+
+        return $response / $totalNumberPerPage;
+    }
+
+    public static function ctrSelectUsers($index = 0, $last = 5)
+    {
+        $table = "users";
+        $response = FormsModel::mdlSelectRange($table, $index, $last);
 
         return $response;
     }
